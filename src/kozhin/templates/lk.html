@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Личный кабинет · NeuroSphere
+    </title>
+
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    >
+
+
+    <style>
+
+        * {
+
+            margin: 0;
+            padding: 0;
+
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            min-height: 100vh;
+
+            font-family:
+                'Inter',
+                sans-serif;
+
+            color: white;
+
+            background:
+                #080c12;
+
+            position: relative;
+
+            overflow-x: hidden;
+        }
+
+
+        .background {
+
+            position: fixed;
+
+            inset: 0;
+
+            background:
+                radial-gradient(
+                    circle at 20% 20%,
+                    #1b3158,
+                    transparent 45%
+                ),
+                radial-gradient(
+                    circle at 85% 80%,
+                    #3c2462,
+                    transparent 45%
+                ),
+                #080c12;
+
+            z-index: -2;
+        }
+
+
+        .orb {
+
+            position: fixed;
+
+            border-radius: 50%;
+
+            filter: blur(110px);
+
+            opacity: 0.22;
+
+            z-index: -1;
+        }
+
+
+        .orb-one {
+
+            width: 500px;
+            height: 500px;
+
+            background:
+                #477cff;
+
+            left: -150px;
+            top: -120px;
+        }
+
+
+        .orb-two {
+
+            width: 450px;
+            height: 450px;
+
+            background:
+                #8c52ff;
+
+            right: -100px;
+            bottom: -120px;
+        }
+
+
+        header {
+
+            height: 76px;
+
+            padding:
+                0 34px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content:
+                space-between;
+
+            background:
+                rgba(13, 20, 30, 0.55);
+
+            backdrop-filter:
+                blur(18px);
+
+            border-bottom:
+                1px solid
+                rgba(255,255,255,0.06);
+        }
+
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            font-size: 22px;
+
+            font-weight: 700;
+        }
+
+
+        .brand i {
+
+            color: #7aa9ff;
+
+            font-size: 28px;
+        }
+
+
+        .logout {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+            color:
+                rgba(255,255,255,0.65);
+
+            text-decoration: none;
+
+            padding:
+                10px 16px;
+
+            border-radius: 30px;
+
+            transition:
+                0.2s;
+
+            background:
+                rgba(255,255,255,0.04);
+
+            border:
+                1px solid
+                rgba(255,255,255,0.05);
+        }
+
+
+        .logout:hover {
+
+            color: white;
+
+            background:
+                rgba(255,255,255,0.1);
+        }
+
+
+        main {
+
+            width: 100%;
+
+            max-width: 850px;
+
+            margin:
+                0 auto;
+
+            padding:
+                70px 24px;
+        }
+
+
+        .hello {
+
+            margin-bottom: 32px;
+        }
+
+
+        .hello-small {
+
+            color:
+                #7aa9ff;
+
+            font-size: 14px;
+
+            font-weight: 600;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                1.5px;
+
+            margin-bottom: 8px;
+        }
+
+
+        h1 {
+
+            font-size: 38px;
+
+            font-weight: 600;
+
+            letter-spacing:
+                -1px;
+
+            margin-bottom: 10px;
+        }
+
+
+        .subtitle {
+
+            color:
+                rgba(255,255,255,0.5);
+
+            font-size: 16px;
+        }
+
+
+        .profile {
+
+            padding: 32px;
+
+            border-radius: 30px;
+
+            background:
+                rgba(21, 31, 45, 0.62);
+
+            border:
+                1px solid
+                rgba(255,255,255,0.07);
+
+            backdrop-filter:
+                blur(20px);
+
+            box-shadow:
+                0 30px 50px -20px
+                rgba(0,0,0,0.5);
+
+            margin-bottom:
+                24px;
+        }
+
+
+        .profile-title {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+            margin-bottom:
+                26px;
+        }
+
+
+        .profile-avatar {
+
+            width: 58px;
+            height: 58px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #477cff,
+                    #7657df
+                );
+
+            font-size: 23px;
+
+            box-shadow:
+                0 10px 25px
+                rgba(71,124,255,0.25);
+        }
+
+
+        .profile-title h2 {
+
+            font-size: 22px;
+
+            margin-bottom: 4px;
+        }
+
+
+        .profile-title span {
+
+            font-size: 14px;
+
+            color:
+                rgba(255,255,255,0.45);
+        }
+
+
+        .info-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 14px;
+        }
+
+
+        .info-card {
+
+            padding:
+                20px;
+
+            border-radius:
+                20px;
+
+            background:
+                rgba(255,255,255,0.035);
+
+            border:
+                1px solid
+                rgba(255,255,255,0.05);
+        }
+
+
+        .info-card.balance-card {
+
+            grid-column:
+                1 / -1;
+        }
+
+
+        .info-label {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            color:
+                rgba(255,255,255,0.4);
+
+            font-size: 13px;
+
+            margin-bottom: 8px;
+        }
+
+
+        .info-value {
+
+            font-size: 18px;
+
+            font-weight: 500;
+
+            word-break:
+                break-word;
+        }
+
+
+        .balance {
+
+            color: #79dca5;
+
+            font-size: 29px;
+
+            font-weight: 700;
+        }
+
+
+        .actions {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 16px;
+        }
+
+
+        .action {
+
+            min-height: 125px;
+
+            border-radius: 25px;
+
+            padding: 22px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content:
+                space-between;
+
+            text-decoration: none;
+
+            color: white;
+
+            transition:
+                0.25s;
+
+            border:
+                1px solid
+                rgba(255,255,255,0.07);
+        }
+
+
+        .action:hover {
+
+            transform:
+                translateY(-4px);
+        }
+
+
+        .history {
+
+            background:
+                rgba(255,255,255,0.055);
+        }
+
+
+        .history:hover {
+
+            background:
+                rgba(255,255,255,0.085);
+        }
+
+
+        .ai {
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #315fa6,
+                    #5140a7
+                );
+
+            box-shadow:
+                0 16px 35px -15px
+                rgba(76,92,220,0.7);
+        }
+
+
+        .action-left {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 16px;
+        }
+
+
+        .action-icon {
+
+            width: 50px;
+            height: 50px;
+
+            border-radius: 16px;
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            background:
+                rgba(255,255,255,0.09);
+
+            font-size: 21px;
+        }
+
+
+        .action-name {
+
+            font-size: 17px;
+
+            font-weight: 600;
+
+            margin-bottom: 4px;
+        }
+
+
+        .action-description {
+
+            font-size: 13px;
+
+            color:
+                rgba(255,255,255,0.5);
+        }
+
+
+        .arrow {
+
+            color:
+                rgba(255,255,255,0.45);
+
+            font-size: 18px;
+        }
+
+
+        @media (
+            max-width: 650px
+        ) {
+
+            header {
+
+                padding:
+                    0 18px;
+            }
+
+
+            .brand {
+
+                font-size: 19px;
+            }
+
+
+            .logout span {
+
+                display: none;
+            }
+
+
+            main {
+
+                padding:
+                    45px 18px;
+            }
+
+
+            h1 {
+
+                font-size: 30px;
+            }
+
+
+            .profile {
+
+                padding: 22px;
+            }
+
+
+            .info-grid {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            .info-card.balance-card {
+
+                grid-column: auto;
+            }
+
+
+            .actions {
+
+                grid-template-columns:
+                    1fr;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="background"></div>
+
+    <div class="orb orb-one"></div>
+
+    <div class="orb orb-two"></div>
+
+
+    <header>
+
+
+        <div class="brand">
+
+            <i class="fas fa-brain"></i>
+
+            <span>
+                NeuroSphere
+            </span>
+
+        </div>
+
+
+        <a
+            class="logout"
+            href="{{ url_for('logout') }}"
+        >
+
+            <i class="fas fa-right-from-bracket"></i>
+
+            <span>
+                Выйти
+            </span>
+
+        </a>
+
+
+    </header>
+
+
+    <main>
+
+
+        <div class="hello">
+
+            <div class="hello-small">
+                Личный кабинет
+            </div>
+
+            <h1>
+                Здравствуйте, {{ user.username }}!
+            </h1>
+
+            <div class="subtitle">
+                Управляйте своим аккаунтом и работайте с NeuroSphere AI
+            </div>
+
+        </div>
+
+
+        <section class="profile">
+
+
+            <div class="profile-title">
+
+
+                <div class="profile-avatar">
+
+                    <i class="fas fa-user"></i>
+
+                </div>
+
+
+                <div>
+
+                    <h2>
+                        {{ user.username }}
+                        {{ user.surname }}
+                    </h2>
+
+                    <span>
+                        Пользователь NeuroSphere
+                    </span>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="info-grid">
+
+
+                <div class="info-card">
+
+                    <div class="info-label">
+
+                        <i class="fas fa-user"></i>
+
+                        Имя
+
+                    </div>
+
+                    <div class="info-value">
+                        {{ user.username }}
+                    </div>
+
+                </div>
+
+
+                <div class="info-card">
+
+                    <div class="info-label">
+
+                        <i class="fas fa-user-tag"></i>
+
+                        Фамилия
+
+                    </div>
+
+                    <div class="info-value">
+                        {{ user.surname }}
+                    </div>
+
+                </div>
+
+
+                <div class="info-card">
+
+                    <div class="info-label">
+
+                        <i class="fas fa-envelope"></i>
+
+                        Электронная почта
+
+                    </div>
+
+                    <div class="info-value">
+                        {{ user.email }}
+                    </div>
+
+                </div>
+
+
+                <div class="info-card balance-card">
+
+                    <div class="info-label">
+
+                        <i class="fas fa-wallet"></i>
+
+                        Баланс
+
+                    </div>
+
+                    <div class="balance">
+                        {{ user.balance }} ₽
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+        </section>
+
+
+        <section class="actions">
+
+
+            <a
+                href="{{ url_for('history') }}"
+                class="action history"
+            >
+
+
+                <div class="action-left">
+
+
+                    <div class="action-icon">
+
+                        <i
+                            class="fas fa-clock-rotate-left">
+                        </i>
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="action-name">
+                            История
+                        </div>
+
+                        <div class="action-description">
+                            Ваши прошлые запросы
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <i
+                    class="fas fa-chevron-right arrow">
+                </i>
+
+
+            </a>
+
+
+            <a
+                href="{{ url_for('main_page') }}"
+                class="action ai"
+            >
+
+
+                <div class="action-left">
+
+
+                    <div class="action-icon">
+
+                        <i class="fas fa-robot"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="action-name">
+                            Запрос в нейросеть
+                        </div>
+
+                        <div class="action-description">
+                            Открыть NeuroSphere AI
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <i
+                    class="fas fa-chevron-right arrow">
+                </i>
+
+
+            </a>
+
+
+        </section>
+
+
+    </main>
+
+
+</body>
+
+</html>

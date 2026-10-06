@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        История · NeuroSphere
+    </title>
+
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    >
+
+
+    <style>
+
+        * {
+
+            margin: 0;
+            padding: 0;
+
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            min-height: 100vh;
+
+            font-family:
+                'Inter',
+                sans-serif;
+
+            color: white;
+
+            background:
+                radial-gradient(
+                    circle at 30% 20%,
+                    #182b4d,
+                    #080c12 60%
+                );
+
+            padding:
+                30px 20px;
+        }
+
+
+        .container {
+
+            width: 100%;
+
+            max-width: 850px;
+
+            margin:
+                0 auto;
+        }
+
+
+        .top {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content:
+                space-between;
+
+            margin-bottom: 50px;
+        }
+
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            font-size: 22px;
+
+            font-weight: 700;
+        }
+
+
+        .brand i {
+
+            color: #7aa9ff;
+
+            font-size: 28px;
+        }
+
+
+        .back {
+
+            text-decoration: none;
+
+            color:
+                rgba(255,255,255,0.65);
+
+            padding:
+                10px 17px;
+
+            border-radius:
+                25px;
+
+            background:
+                rgba(255,255,255,0.05);
+
+            border:
+                1px solid
+                rgba(255,255,255,0.06);
+
+            transition:
+                0.2s;
+        }
+
+
+        .back:hover {
+
+            color: white;
+
+            background:
+                rgba(255,255,255,0.1);
+        }
+
+
+        h1 {
+
+            font-size: 36px;
+
+            margin-bottom: 9px;
+        }
+
+
+        .subtitle {
+
+            color:
+                rgba(255,255,255,0.5);
+
+            margin-bottom: 30px;
+        }
+
+
+        .history-box {
+
+            min-height: 330px;
+
+            border-radius: 30px;
+
+            background:
+                rgba(20, 31, 45, 0.55);
+
+            border:
+                1px solid
+                rgba(255,255,255,0.07);
+
+            backdrop-filter:
+                blur(18px);
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            text-align: center;
+
+            padding: 40px;
+
+            box-shadow:
+                0 25px 50px -20px
+                rgba(0,0,0,0.5);
+        }
+
+
+        .empty-icon {
+
+            width: 75px;
+            height: 75px;
+
+            border-radius: 25px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                rgba(122,169,255,0.1);
+
+            color:
+                #7aa9ff;
+
+            font-size: 30px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .history-box h2 {
+
+            font-size: 22px;
+
+            margin-bottom: 9px;
+        }
+
+
+        .history-box p {
+
+            color:
+                rgba(255,255,255,0.45);
+
+            max-width: 420px;
+
+            line-height: 1.6;
+
+            margin-bottom: 24px;
+        }
+
+
+        .ai-button {
+
+            text-decoration: none;
+
+            color: white;
+
+            font-weight: 600;
+
+            padding:
+                14px 22px;
+
+            border-radius:
+                25px;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #3a7bd5,
+                    #5b48d0
+                );
+
+            transition:
+                0.2s;
+        }
+
+
+        .ai-button:hover {
+
+            transform:
+                translateY(-2px);
+        }
+
+
+        .ai-button i {
+
+            margin-right: 7px;
+        }
+
+
+        @media (
+            max-width: 550px
+        ) {
+
+            .top {
+
+                margin-bottom: 35px;
+            }
+
+
+            .back span {
+
+                display: none;
+            }
+
+
+            h1 {
+
+                font-size: 30px;
+            }
+
+
+            .history-box {
+
+                padding:
+                    30px 20px;
+            }
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <div class="container">
+
+
+        <div class="top">
+
+
+            <div class="brand">
+
+                <i class="fas fa-brain"></i>
+
+                NeuroSphere
+
+            </div>
+
+
+            <a
+                href="{{ url_for('lk') }}"
+                class="back"
+            >
+
+                <i class="fas fa-arrow-left"></i>
+
+                <span>
+                    Личный кабинет
+                </span>
+
+            </a>
+
+
+        </div>
+
+
+        <h1>
+            История запросов
+        </h1>
+
+
+        <div class="subtitle">
+            Здесь будут храниться ваши обращения к NeuroSphere AI
+        </div>
+
+
+        <div class="history-box">
+
+
+            <div class="empty-icon">
+
+                <i
+                    class="fas fa-clock-rotate-left">
+                </i>
+
+            </div>
+
+
+            <h2>
+                История пока пуста
+            </h2>
+
+
+            <p>
+
+                После подключения сохранения запросов
+                здесь будут отображаться ваши предыдущие
+                диалоги с нейросетью.
+
+            </p>
+
+
+            <a
+                href="{{ url_for('main_page') }}"
+                class="ai-button"
+            >
+
+                <i class="fas fa-robot"></i>
+
+                Сделать первый запрос
+
+            </a>
+
+
+        </div>
+
+
+    </div>
+
+
+</body>
+
+</html>
