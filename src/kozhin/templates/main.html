@@ -901,7 +901,7 @@
             sending = true;
             sendBtn.disabled = true;
             userInput.readOnly = true;
-            chatStatus.textContent = '';
+            chatStatus.textContent = 'Qwen готовит ответ. При первом запуске модель скачивается автоматически — это может занять несколько минут.';
             try {
                 const response = await fetch({{ url_for('chat_request') | tojson }}, {
                     method: 'POST',
@@ -916,6 +916,7 @@
                 userInput.value = '';
                 userInput.style.height = 'auto';
                 addMessage(data.reply, 'ai');
+                chatStatus.textContent = '';
                 if (data.history_saved === false) {
                     chatStatus.textContent = 'Ответ получен, но не удалось сохранить историю.';
                 }
