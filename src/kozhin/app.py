@@ -12,6 +12,11 @@ import mysql.connector
 import re
 import traceback
 import os
+import json
+import tempfile
+from pathlib import Path
+from threading import Lock
+from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 
 from werkzeug.security import (
@@ -675,6 +680,53 @@ def lk():
 
 REQUEST_PRICE = Decimal("1.00")  # Стоимость одного запроса в рублях
 
+# История хранится в отдельном JSON-файле, без изменений в MySQL.
+HISTORY_FILE = Path(__file__).resolve().parents[2] / "history.json"
+HISTORY_LOCK = Lock()
+
+
+def read_history():
+    """Читает историю всех аккаунтов. Вызывать под HISTORY_LOCK."""
+    try:
+        with HISTORY_FILE.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        return {}
+    if not isinstance(data, dict):
+        raise ValueError("Некорректный формат истории")
+    return data
+
+
+def save_history(email, message, reply):
+    """Добавляет один успешный запрос в историю пользователя."""
+    with HISTORY_LOCK:
+        data = read_history()
+        data.setdefault(email, []).append({
+            "message": message,
+            "reply": reply,
+            "date": datetime.now(timezone.utc).strftime("%d.%m.%Y %H:%M UTC"),
+            "cost": format(REQUEST_PRICE, ".2f")
+        })
+        # Сначала записываем во временный файл, затем заменяем оригинал.
+        temp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w", encoding="utf-8", dir=HISTORY_FILE.parent,
+                prefix=".history-", suffix=".tmp", delete=False
+            ) as file:
+                temp_path = Path(file.name)
+                json.dump(data, file, ensure_ascii=False, indent=4)
+            os.replace(temp_path, HISTORY_FILE)
+        finally:
+            if temp_path is not None and temp_path.exists():
+                temp_path.unlink()
+
+
+def user_history(email):
+    with HISTORY_LOCK:
+        return list(reversed(read_history().get(email, [])))
+
+
 
 def change_balance(amount=None):
     """Получает баланс или изменяет его в одной транзакции."""
@@ -763,7 +815,15 @@ def chat_request():
     result = change_balance(-REQUEST_PRICE)
     if isinstance(result, tuple):
         return result
-    return jsonify(success=True, balance=result.get_json()["balance"], reply=response)
+    # Записываем только запросы, за которые успешно списан баланс.
+    history_saved = True
+    try:
+        save_history(session["user_email"], message.strip(), response)
+    except (OSError, ValueError, TypeError, AttributeError):
+        traceback.print_exc()
+        history_saved = False
+    return jsonify(success=True, balance=result.get_json()["balance"],
+                   reply=response, history_saved=history_saved)
 
 
 # =========================================================
@@ -806,9 +866,13 @@ def history():
             )
         )
 
-    return render_template(
-        "history.html"
-    )
+    try:
+        entries = user_history(session["user_email"])
+    except (OSError, ValueError, TypeError, AttributeError):
+        traceback.print_exc()
+        return render_template("history.html", entries=[], history_error=True), 500
+
+    return render_template("history.html", entries=entries, history_error=False)
 
 
 # =========================================================
