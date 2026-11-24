@@ -12,6 +12,7 @@ import mysql.connector
 import re
 import traceback
 import os
+from decimal import Decimal, InvalidOperation
 
 from werkzeug.security import (
     generate_password_hash,
@@ -669,6 +670,103 @@ def lk():
 
 
 # =========================================================
+# БАЛАНС И ЗАПРОСЫ К НЕЙРОСЕТИ
+# =========================================================
+
+REQUEST_PRICE = Decimal("1.00")  # Стоимость одного запроса в рублях
+
+
+def change_balance(amount=None):
+    """Получает баланс или изменяет его в одной транзакции."""
+    conn = get_db_connection()
+    if conn is None:
+        return jsonify(success=False, message="Ошибка подключения к базе данных"), 500
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT balance FROM users WHERE email = %s FOR UPDATE",
+            (session["user_email"],)
+        )
+        user = cursor.fetchone()
+        if user is None:
+            conn.rollback()
+            return jsonify(success=False, message="Пользователь не найден"), 404
+
+        balance = Decimal(str(user["balance"]))
+        if amount is not None:
+            if balance + amount < 0:
+                conn.rollback()
+                return jsonify(
+                    success=False,
+                    message="Недостаточно средств. Пополните баланс в личном кабинете.",
+                    balance=format(balance, ".2f")
+                ), 400
+
+            cursor.execute(
+                "UPDATE users SET balance = balance + %s WHERE email = %s",
+                (amount, session["user_email"])
+            )
+            cursor.execute(
+                "SELECT balance FROM users WHERE email = %s",
+                (session["user_email"],)
+            )
+            balance = Decimal(str(cursor.fetchone()["balance"]))
+
+        conn.commit()
+        return jsonify(success=True, balance=format(balance, ".2f"))
+
+    except mysql.connector.Error:
+        conn.rollback()
+        traceback.print_exc()
+        return jsonify(success=False, message="Ошибка при работе с базой данных"), 500
+    finally:
+        conn.close()
+
+
+@app.route("/api/balance", methods=["GET"])
+def get_balance():
+    if not is_authorized():
+        return jsonify(success=False, message="Войдите в аккаунт"), 401
+    return change_balance()
+
+
+@app.route("/api/balance/topup", methods=["POST"])
+def topup_balance():
+    if not is_authorized():
+        return jsonify(success=False, message="Войдите в аккаунт"), 401
+
+    data = request.get_json(silent=True)
+    try:
+        amount = Decimal(str(data["amount"]))
+        if (not amount.is_finite() or amount <= 0 or amount > Decimal("1000000")
+                or amount != amount.quantize(Decimal("0.01"))):
+            raise ValueError
+    except (InvalidOperation, ValueError, TypeError, KeyError):
+        return jsonify(success=False, message="Введите положительную сумму в рублях (до 1 000 000, не более двух знаков после запятой)"), 400
+
+    return change_balance(amount)
+
+
+@app.route("/api/chat", methods=["POST"])
+def chat_request():
+    if not is_authorized():
+        return jsonify(success=False, message="Войдите в аккаунт"), 401
+
+    data = request.get_json(silent=True)
+    message = data.get("message") if isinstance(data, dict) else None
+    if not isinstance(message, str) or not message.strip():
+        return jsonify(success=False, message="Введите сообщение"), 400
+
+    # Пока реальная нейросеть не подключена, возвращаем демо-ответ.
+    response = "Это демо-ответ нейросети. В реальном приложении здесь будет ответ от API."
+    result = change_balance(-REQUEST_PRICE)
+    if isinstance(result, tuple):
+        return result
+    return jsonify(success=True, balance=result.get_json()["balance"], reply=response)
+
+
+# =========================================================
 # СТРАНИЦА НЕЙРОСЕТИ
 # =========================================================
 
@@ -685,6 +783,7 @@ def main_page():
 
     return render_template(
         "main.html",
+        request_price=format(REQUEST_PRICE, ".2f"),
         user_name=session.get(
             "username",
             "Профиль"
