@@ -666,6 +666,12 @@
             }
         }
 
+        .chat-balance-info { display: flex; flex-wrap: wrap; justify-content: space-between;
+            gap: 6px 16px; font-size: 13px; color: rgba(255,255,255,.65); padding: 0 12px 8px; }
+        .chat-balance-info a { color: #79dca5; text-decoration: none; }
+        #chatStatus { color: #ff9090; font-size: 13px; padding: 0 12px; }
+        .send-btn:disabled { opacity: .5; cursor: wait; transform: none; }
+
     </style>
 
 </head>
@@ -753,6 +759,7 @@
         </div>
 
 
+        <div id="chatStatus" role="status"></div>
         <div class="chat-input-area">
 
 
@@ -774,7 +781,10 @@
 
 
         </div>
-
+        <div class="chat-balance-info">
+            <span>Стоимость запроса: {{ request_price }} ₽</span>
+            <a href="{{ url_for('lk') }}">Баланс: <span id="chatBalance">…</span> ₽ · Пополнить</a>
+        </div>
 
     </div>
 
@@ -869,44 +879,56 @@
         }
 
 
-        async function sendMessage() {
+        const chatBalance = document.getElementById('chatBalance');
+        const chatStatus = document.getElementById('chatStatus');
+        let sending = false;
 
-            const text =
-                userInput.value.trim();
-
-
-            if (!text) {
-
-                return;
+        async function loadBalance() {
+            try {
+                const response = await fetch({{ url_for('get_balance') | tojson }}, {cache: 'no-store'});
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.message);
+                chatBalance.textContent = data.balance;
+            } catch (error) {
+                chatStatus.textContent = error.message || 'Не удалось загрузить баланс';
             }
-
-
-            addMessage(
-                text,
-                'user'
-            );
-
-
-            userInput.value =
-                '';
-
-
-            userInput.style.height =
-                'auto';
-
-
-            setTimeout(
-                () => {
-
-                    addMessage(
-                        'Это демо-ответ нейросети. В реальном приложении здесь будет ответ от API.',
-                        'ai'
-                    );
-
-                },
-                800
-            );
         }
+
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text || sending || sendBtn.disabled) return;
+
+            sending = true;
+            sendBtn.disabled = true;
+            userInput.readOnly = true;
+            chatStatus.textContent = '';
+            try {
+                const response = await fetch({{ url_for('chat_request') | tojson }}, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message: text})
+                });
+                const data = await response.json();
+                if (data.balance !== undefined) chatBalance.textContent = data.balance;
+                if (!response.ok || !data.success) throw new Error(data.message || 'Ошибка запроса');
+
+                addMessage(text, 'user');
+                userInput.value = '';
+                userInput.style.height = 'auto';
+                addMessage(data.reply, 'ai');
+            } catch (error) {
+                chatStatus.textContent = error.message || 'Ошибка соединения с сервером';
+            } finally {
+                sending = false;
+                sendBtn.disabled = false;
+                userInput.readOnly = false;
+                userInput.focus();
+            }
+        }
+
+        // Не допускаем, чтобы начальная загрузка баланса перезаписала новый баланс.
+        sendBtn.disabled = true;
+        loadBalance().finally(() => { if (!sending) sendBtn.disabled = false; });
 
 
         sendBtn.addEventListener(

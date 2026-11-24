@@ -619,6 +619,21 @@
             }
         }
 
+        .topup-form { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+        .topup-form[hidden] { display: none; }
+        .topup-form input {
+            flex: 1; min-width: 120px; padding: 10px 14px; color: white;
+            background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15);
+            border-radius: 12px; font: inherit;
+        }
+        .topup-btn {
+            padding: 10px 16px; color: white; background: #3a7bd5; border: 0;
+            border-radius: 12px; font: inherit; cursor: pointer; margin-top: 10px;
+        }
+        .topup-form .topup-btn { margin-top: 0; }
+        .topup-btn:disabled { opacity: .55; cursor: wait; }
+        #topupStatus { margin-top: 10px; font-size: 13px; }
+
     </style>
 
 </head>
@@ -779,9 +794,18 @@
 
                     </div>
 
-                    <div class="balance">
+                    <div class="balance" id="balanceValue">
                         {{ user.balance }} ₽
                     </div>
+                    <button type="button" class="topup-btn" id="showTopup">
+                        <i class="fas fa-plus"></i> Пополнить баланс
+                    </button>
+                    <form id="topupForm" class="topup-form" hidden>
+                        <input id="topupAmount" type="number" min="0.01" max="1000000"
+                               step="0.01" placeholder="Сумма, ₽" aria-label="Сумма пополнения" required>
+                        <button type="submit" class="topup-btn" id="confirmTopup">Пополнить</button>
+                    </form>
+                    <div id="topupStatus" role="status"></div>
 
                 </div>
 
@@ -883,6 +907,43 @@
     </main>
 
 
+    <script>
+        const topupForm = document.getElementById('topupForm');
+        const amountInput = document.getElementById('topupAmount');
+        const confirmTopup = document.getElementById('confirmTopup');
+        const topupStatus = document.getElementById('topupStatus');
+
+        document.getElementById('showTopup').addEventListener('click', () => {
+            topupForm.hidden = !topupForm.hidden;
+            if (!topupForm.hidden) amountInput.focus();
+        });
+
+        topupForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (confirmTopup.disabled) return;
+            confirmTopup.disabled = true;
+            topupStatus.textContent = '';
+            try {
+                const response = await fetch({{ url_for('topup_balance') | tojson }}, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({amount: amountInput.value})
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.message || 'Ошибка пополнения');
+                document.getElementById('balanceValue').textContent = data.balance + ' ₽';
+                topupStatus.style.color = '#79dca5';
+                topupStatus.textContent = 'Баланс успешно пополнен';
+                topupForm.reset();
+                topupForm.hidden = true;
+            } catch (error) {
+                topupStatus.style.color = '#ff9090';
+                topupStatus.textContent = error.message || 'Ошибка соединения с сервером';
+            } finally {
+                confirmTopup.disabled = false;
+            }
+        });
+    </script>
 </body>
 
 </html>
