@@ -916,6 +916,9 @@
                 userInput.value = '';
                 userInput.style.height = 'auto';
                 addMessage(data.reply, 'ai');
+                if (data.history_saved === false) {
+                    chatStatus.textContent = 'Ответ получен, но не удалось сохранить историю.';
+                }
             } catch (error) {
                 chatStatus.textContent = error.message || 'Ошибка соединения с сервером';
             } finally {
