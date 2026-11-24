@@ -680,6 +680,41 @@ def lk():
 
 REQUEST_PRICE = Decimal("1.00")  # Стоимость одного запроса в рублях
 
+# Локальная модель: скачивается автоматически при первом запросе.
+MODEL_REPO = "Qwen/Qwen2.5-1.5B-Instruct-GGUF"
+MODEL_FILE = "qwen2.5-1.5b-instruct-q4_k_m.gguf"
+MODEL_LOCK = Lock()
+model = None
+
+
+def generate_reply(message):
+    global model
+    # llama.cpp не должен одновременно обрабатывать несколько запросов
+    # через один экземпляр Llama.
+    with MODEL_LOCK:
+        if model is None:
+            from llama_cpp import Llama
+            model = Llama.from_pretrained(
+                repo_id=MODEL_REPO,
+                filename=MODEL_FILE,
+                n_ctx=2048,
+                n_threads=min(4, os.cpu_count() or 1),
+                n_gpu_layers=0,
+                verbose=False,
+            )
+        result = model.create_chat_completion(
+            messages=[
+                {"role": "system", "content": "Ты NeuroSphere AI, полезный помощник. Отвечай на языке пользователя."},
+                {"role": "user", "content": message},
+            ],
+            max_tokens=384,
+            temperature=0.7,
+        )
+        reply = result["choices"][0]["message"]["content"]
+        if not isinstance(reply, str) or not reply.strip():
+            raise ValueError("Модель вернула пустой ответ")
+        return reply.strip()
+
 # История хранится в отдельном JSON-файле, без изменений в MySQL.
 HISTORY_FILE = Path(__file__).resolve().parents[2] / "history.json"
 HISTORY_LOCK = Lock()
@@ -810,8 +845,22 @@ def chat_request():
     if not isinstance(message, str) or not message.strip():
         return jsonify(success=False, message="Введите сообщение"), 400
 
-    # Пока реальная нейросеть не подключена, возвращаем демо-ответ.
-    response = "Это демо-ответ нейросети. В реальном приложении здесь будет ответ от API."
+    # Проверяем баланс до загрузки модели и генерации.
+    current = change_balance()
+    if isinstance(current, tuple):
+        return current
+    balance = current.get_json()["balance"]
+    if Decimal(balance) < REQUEST_PRICE:
+        return jsonify(success=False, balance=balance,
+                       message="Недостаточно средств. Пополните баланс в личном кабинете."), 400
+
+    # При ошибке модели деньги не списываются.
+    try:
+        response = generate_reply(message.strip())
+    except Exception:
+        traceback.print_exc()
+        return jsonify(success=False, message="Не удалось получить ответ Qwen. Проверьте терминал сервера и доступ к Hugging Face. Баланс не списан."), 503
+
     result = change_balance(-REQUEST_PRICE)
     if isinstance(result, tuple):
         return result
