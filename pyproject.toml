@@ -1,8 +1,10 @@
 [project]
 name = "kozhin"
 version = "0.1.0"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "flask>=3.0.3",
     "mysql-connector-python>=9.0.0",
+    "llama-cpp-python>=0.3.0,<0.4",
+    "huggingface-hub>=0.25,<2",
 ]
